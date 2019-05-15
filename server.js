@@ -16,10 +16,10 @@ wss.on('connection', function (connection, req) {
     //when server gets a message from a connected user 
     connection.on('message', function (message) {
         var data;
-
         //accepting only JSON messages 
+        console.log(message, helper.decrypt(message, id))
         try {
-            data = JSON.parse(message);
+            data = JSON.parse(helper.decrypt(message, id));
         } catch (e) {
             console.log("Invalid JSON");
             data = {};
@@ -138,4 +138,5 @@ wss.on('connection', function (connection, req) {
             }
         }
     });
+    helper.sendTo(connection, id, "Hello world");
 });

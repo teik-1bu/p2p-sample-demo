@@ -1,4 +1,6 @@
 const util = require('util')
+var enc = new util.TextEncoder(); // always utf-8
+var dec = new util.TextDecoder("utf-8");
 
 /**
  * Encrypt and decrypt data by XOR
@@ -9,7 +11,7 @@ function cryptoraphy(data, key) {
     var dataLength = data.byteLength
     let result = new Uint8Array(dataLength)
     for (var i = 0; i < dataLength; i++) {
-        result[i] = data[i] ^ key[i % key.byteLength]
+        result[i] = data.values()[i] ^ key[i % key.byteLength]
     }
     return result
 }
@@ -43,12 +45,21 @@ function buf2hex(buffer) { // buffer is an ArrayBuffer
     return Array.prototype.map.call(new Uint8Array(buffer), x => ('00' + x.toString(16)).slice(-2)).join('');
 }
 
-module.exports.sendTo = function (connection, id, message) {
-    var enc = new util.TextEncoder(); // always utf-8
+function encrypt(msg, id) {
     key = enc.encode(id);
-    var typedArray = new Uint8Array(str2hex(JSON.stringify(message)).match(/[\da-f]{2}/gi).map(function (h) {
+    var typedArray = new Uint8Array(str2hex(JSON.stringify(msg)).match(/[\da-f]{2}/gi).map(function (h) {
         return parseInt(h, 16)
     }))
-    connection.send(buf2hex(cryptoraphy(typedArray, key)));
+
+    return new Uint8Array(cryptoraphy(typedArray, key))
+}
+
+module.exports.decrypt = function(msg, id) {
+    key = enc.encode(id);
+    return dec.decode(cryptoraphy(msg, key))
+}
+
+module.exports.sendTo = function (connection, id, message) {
+    connection.send(encrypt(message, id));
 }
 
