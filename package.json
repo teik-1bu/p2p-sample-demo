@@ -1,0 +1,19 @@
+{
+  "name": "p2p-sample-demo",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tukida/p2p-sample-demo.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/tukida/p2p-sample-demo/issues"
+  },
+  "homepage": "https://github.com/tukida/p2p-sample-demo#readme"
+}
