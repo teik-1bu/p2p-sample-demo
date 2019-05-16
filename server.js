@@ -15,7 +15,7 @@ wss.on('connection', function (connection, req) {
     const id = query.id
     //when server gets a message from a connected user 
     connection.on('message', function (message) {
-        var data;
+        var data = {};
         //accepting only JSON messages 
         console.log(message, helper.decrypt(message, id))
         try {
@@ -39,7 +39,11 @@ wss.on('connection', function (connection, req) {
                     });
                 } else {
                     //save user connection on the server 
-                    users[data.name] = connection;
+                    users[data.name] = {
+                        conn: connection,
+                        peerId: id
+                    }
+
                     connection.name = data.name;
 
                     helper.sendTo(connection, id, {
@@ -55,13 +59,14 @@ wss.on('connection', function (connection, req) {
                 console.log("Sending offer to: ", data.name);
 
                 //if UserB exists then send him offer details 
-                var conn = users[data.name];
+                var conn = users[data.name].conn;
+                var peerId = users[data.name].peerId;
 
                 if (conn != null) {
                     //setting that UserA connected with UserB 
                     connection.otherName = data.name;
 
-                    helper.sendTo(conn, id, {
+                    helper.sendTo(conn, peerId, {
                         type: "offer",
                         offer: data.offer,
                         name: connection.name
@@ -73,11 +78,12 @@ wss.on('connection', function (connection, req) {
                 console.log("Sending answer to: ", data.name);
 
                 //for ex. UserB answers UserA 
-                var conn = users[data.name];
+                var conn = users[data.name].conn;
+                var peerId = users[data.name].peerId;
 
                 if (conn != null) {
                     connection.otherName = data.name;
-                    helper.sendTo(conn, id, {
+                    helper.sendTo(conn, peerId, {
                         type: "answer",
                         answer: data.answer
                     });
@@ -86,10 +92,11 @@ wss.on('connection', function (connection, req) {
                 break;
             case "candidate":
                 console.log("Sending candidate to:", data.name);
-                var conn = users[data.name];
+                var conn = users[data.name].conn;
+                var peerId = users[data.name].peerId;
 
                 if (conn != null) {
-                    helper.sendTo(conn, id, {
+                    helper.sendTo(conn, peerId, {
                         type: "candidate",
                         candidate: data.candidate
                     });
@@ -98,12 +105,14 @@ wss.on('connection', function (connection, req) {
                 break;
             case "leave":
                 console.log("Disconnecting from", data.name);
-                var conn = users[data.name];
+                var conn = users[data.name].conn;
+                var peerId = users[data.name].peerId;
+
                 conn.otherName = null;
 
                 //notify the other user so he can disconnect his peer connection 
                 if (conn != null) {
-                    helper.sendTo(conn, id, {
+                    helper.sendTo(conn, peerId, {
                         type: "leave"
                     });
                 }
@@ -127,11 +136,13 @@ wss.on('connection', function (connection, req) {
 
             if (connection.otherName) {
                 console.log("Disconnecting from ", connection.otherName);
-                var conn = users[connection.otherName];
+                var conn = users[connection.otherName].conn;
+                var peerId = users[connection.otherName].peerId;
+
                 conn.otherName = null;
 
                 if (conn != null) {
-                    helper.sendTo(conn, id, {
+                    helper.sendTo(conn, peerId, {
                         type: "leave"
                     });
                 }

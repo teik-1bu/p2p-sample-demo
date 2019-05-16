@@ -11,7 +11,7 @@ function cryptoraphy(data, key) {
     var dataLength = data.byteLength
     let result = new Uint8Array(dataLength)
     for (var i = 0; i < dataLength; i++) {
-        result[i] = data.values()[i] ^ key[i % key.byteLength]
+        result[i] = data[i] ^ key[i % key.byteLength]
     }
     return result
 }
